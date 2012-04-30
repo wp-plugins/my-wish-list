@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 0.0.1
+ * @version 0.0.2
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 0.0.1
+Version: 0.0.2
 Author URI: http://www.nlb-creations.com
 */
 
@@ -226,11 +226,11 @@ function my_wish_dynamic_inner_custom_box() {
     <div id="meta_inner" class="my_wish_list_list">
     <?php
 
-    //get the saved meta as an arry
+    //get the saved meta as an array
     $wishes = get_post_meta($post->ID,'my_wishes',false);
     
     $c = 0;
-    if (count($wishes[0]) > 0){
+    if (count($wishes[0]) > 0 && $wishes[0] != ''){
         foreach($wishes[0] as $track ){
             if (isset($track['wishitem']) || isset($track['wishprice']) || isset($track['wishsize']) || isset($track['wishcolor']) || isset($track['wishstore']) || isset($track['wishlink'])){
                 echo '<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table><tr><td>Item Name:</td><td><input type="text" name="my_wishes['.$c.'][wishitem]" value="'.$track['wishitem'].'" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['.$c.'][wishprice]" value="'.$track['wishprice'].'" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['.$c.'][wishsize]" value="'.$track['wishsize'].'" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['.$c.'][wishcolor]" value="'.$track['wishcolor'].'" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['.$c.'][wishstore]" value="'.$track['wishstore'].'" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishlink]" value="'.$track['wishlink'].'" /></td></tr></table>';

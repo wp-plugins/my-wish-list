@@ -31,7 +31,13 @@ Use the shortcode [wishlist id=xx] in any page or post, where id is the post id 
 = 0.0.1 =
 * Initial release
 
+= 0.0.2 =
+* Bug fix for wishlists save with no items added
+
 == Upgrade Notice ==
 
 = 0.1 =
 * Initial release
+
+= 0.0.2 =
+* Bug fix for wishlists save with no items added
