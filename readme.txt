@@ -34,6 +34,9 @@ Use the shortcode [wishlist id=xx] in any page or post, where id is the post id 
 = 0.0.2 =
 * Bug fix for wishlists save with no items added
 
+= 0.0.3 =
+* Fixing jQuery conflict Wish List was having with other plugins
+
 == Upgrade Notice ==
 
 = 0.1 =
@@ -41,3 +44,6 @@ Use the shortcode [wishlist id=xx] in any page or post, where id is the post id 
 
 = 0.0.2 =
 * Bug fix for wishlists save with no items added
+
+= 0.0.3 =
+* Fixing jQuery conflict Wish List was having with other plugins

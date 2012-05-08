@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 0.0.2
+ * @version 0.0.3
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 0.0.2
+Version: 0.0.3
 Author URI: http://www.nlb-creations.com
 */
 
@@ -67,40 +67,42 @@ function my_wish_show($atts) {
 		$output .= '<div class="wishlist-desc">'.apply_filters('the_content',$wishlist->post_content).'</div>';
 	}
 	
-	foreach($wishmeta as $i => $meta) {
-		$output .= '<div style="clear: both;" class="wishlist-item">';
-		$output .= '<h3>'.$meta['wishitem'].'</h3>';
-		if($meta['wishfilename'] != '') {
-			$thumb = wp_get_attachment_image_src( $meta['wishfilename'], 'medium');
-			$output .= '<img style="float: right; padding: 5px;" src="'.$thumb[0].'" />';
-		}
-		
-		if($meta['wishprice'] != '') {
-			$output .= 'Price: '.$meta['wishprice'].'<br />';	
-		}
-		
-		if($meta['wishsize'] != '') {
-			$output .= 'Size: '.$meta['wishsize'].'<br />';	
-		}
-		
-		if($meta['wishcolor'] != '') {
-			$output .= 'Color: '.$meta['wishcolor'].'<br />';
-		}
-		
-		if($meta['wishstore'] != '') {
-			$output .= 'Available at: '.$meta['wishstore'].'<br />';
-		}
-		
-		if($meta['wishlink'] != '') {
-			if(!stristr($meta['wishlink'], 'http://')) {
-				$meta['wishlink'] = 'http://'.$meta['wishlink'];
+	if($wishmeta) {
+		foreach($wishmeta as $i => $meta) {
+			$output .= '<div style="clear: both;" class="wishlist-item">';
+			$output .= '<h3>'.$meta['wishitem'].'</h3>';
+			if($meta['wishfilename'] != '') {
+				$thumb = wp_get_attachment_image_src( $meta['wishfilename'], 'medium');
+				$output .= '<img style="float: right; padding: 5px;" src="'.$thumb[0].'" />';
 			}
-			$output .= 'Link: <a href="'.$meta['wishlink'].'">'.$meta['wishlink'].'</a><br />';	
+			
+			if($meta['wishprice'] != '') {
+				$output .= 'Price: '.$meta['wishprice'].'<br />';	
+			}
+			
+			if($meta['wishsize'] != '') {
+				$output .= 'Size: '.$meta['wishsize'].'<br />';	
+			}
+			
+			if($meta['wishcolor'] != '') {
+				$output .= 'Color: '.$meta['wishcolor'].'<br />';
+			}
+			
+			if($meta['wishstore'] != '') {
+				$output .= 'Available at: '.$meta['wishstore'].'<br />';
+			}
+			
+			if($meta['wishlink'] != '') {
+				if(!stristr($meta['wishlink'], 'http://')) {
+					$meta['wishlink'] = 'http://'.$meta['wishlink'];
+				}
+				$output .= 'Link: <a href="'.$meta['wishlink'].'">'.$meta['wishlink'].'</a><br />';	
+			}
+			$output .= '</div>';
+			
+			$output .= '<hr style="clear: both;" />';
+			
 		}
-		$output .= '</div>';
-		
-		$output .= '<hr style="clear: both;" />';
-		
 	}
 	
 	return $output;
@@ -296,21 +298,21 @@ function my_wish_dynamic_inner_custom_box() {
 	})(jQuery);
 
 
-	var $ =jQuery.noConflict();
+	//var $ =jQuery.noConflict();
 	
-    $(document).ready(function() {
+    jQuery(document).ready(function() {
         var count = <?php echo $c; ?>;
         var blankimage = "<?php echo get_bloginfo('url').'/wp-content/plugins/my-wish-list/images/blank.png'; ?>";
-        $(".add").click(function() {
+        jQuery(".add").click(function() {
             count = count + 1;
             
-            $('#here').append('<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table><tr><td>Item Name:</td><td><input type="text" name="my_wishes['+count+'][wishitem]" value="" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['+count+'][wishprice]" value="" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['+count+'][wishsize]" value="" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['+count+'][wishcolor]" value="" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['+count+'][wishstore]" value="" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishlink]" value="" /></td></tr></table>   <div class="my_wish_image_uploader" data-preview_size="medium"><img src="'+blankimage+'" alt=""/><input class="value" type="hidden" name="my_wishes['+count+'][wishfilename]" value="" /><p><input type="button" class="button" value="Add Image" /></p><a href="#" class="remove_image">Remove Image</a></div></div>' );
+            jQuery('#here').append('<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table><tr><td>Item Name:</td><td><input type="text" name="my_wishes['+count+'][wishitem]" value="" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['+count+'][wishprice]" value="" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['+count+'][wishsize]" value="" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['+count+'][wishcolor]" value="" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['+count+'][wishstore]" value="" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishlink]" value="" /></td></tr></table>   <div class="my_wish_image_uploader" data-preview_size="medium"><img src="'+blankimage+'" alt=""/><input class="value" type="hidden" name="my_wishes['+count+'][wishfilename]" value="" /><p><input type="button" class="button" value="Add Image" /></p><a href="#" class="remove_image">Remove Image</a></div></div>' );
 
             
             return false;
         });
-        $(".remove").live('click', function() {
-            $(this).parent().remove();
+        jQuery(".remove").live('click', function() {
+        	jQuery(this).parent().remove();
         });
     });
     </script>
