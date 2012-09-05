@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 0.0.3
+ * @version 1.0
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 0.0.3
+Version: 1.0
 Author URI: http://www.nlb-creations.com
 */
 
@@ -40,6 +40,36 @@ function my_wish_create_post_types() {
 	);
 }
 
+//add the stylesheet to the frontend theme
+if ( !is_admin() ) {
+	$dir = WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
+	
+	//allow users to override the included css file with one of the same name in their active theme's folder
+	$wishlist_css = get_stylesheet_directory_uri().'/mywishlist.css';
+	if(!file_exists($wishlist_css)) {
+		wp_enqueue_style( 'my-wish-list', $dir.'/styles/mywishlist.css' );
+	}
+	else {
+		wp_enqueue_style( 'my-wish-list', $wishlist_css);
+	}
+}
+
+//function for donors to promise to purchase items on the frontend
+add_action( 'init', 'my_wish_donor_process' );
+function my_wish_donor_process() {
+	if(isset($_POST['wish_donor_add_update'])) {
+		$wishmeta = get_post_meta($_POST['post_id'], 'my_wishes', true);
+		
+		$wishmeta[$_POST['wishindex']]['wishdonorname'] = $_POST['wishdonorname'];
+		$wishmeta[$_POST['wishindex']]['wishdonoremail'] = $_POST['wishdonoremail'];
+		
+		$_POST['wish_donor_thank_you'] = 1;
+		$_POST['wish_donor_donation'] = $wishmeta[$_POST['wishindex']]['wishitem'];
+		
+		update_post_meta($_POST['post_id'],'my_wishes',$wishmeta);
+	}
+}
+
 //shortcode function to show a wishlist in a post or page
 function my_wish_show($atts) {
 	extract( shortcode_atts( array(
@@ -52,15 +82,30 @@ function my_wish_show($atts) {
 	}
 	
 	$wishlist = get_post($id);
+	$output = '';
 
 	//if a non-existant id was specified, we have nothing to display
 	if(!$wishlist) {
 		return false;
 	}
 	
+	//get the metadata
 	$wishmeta = get_post_meta($id, 'my_wishes', true);
+	$wishlist_instructions_link = get_post_meta($id,'wishlist_instructions_link',true);
+	$wishlist_show_form = get_post_meta($id,'wishlist_show_form',true);
+	$wishlist_show_donor = get_post_meta($id,'wishlist_show_donor',true);
+
+	//thank you message for donors
+	if(isset($_POST['wish_donor_thank_you'])) {
+		$output .= '<div class="wishlist-thanks"> Thank you for pledging to get '.$_POST['wish_donor_donation'].' for us!  ';
+		if($wishlist_instructions_link != '') {
+			$output .= '<a href="'.$wishlist_instructions_link.'">Click here</a> for instructions on purchasing and sending the item.';
+		}
+		$output .= '</div>';
+		unset($_POST['wish_donor_thank_you']);
+	}
 	
-	//otherwise, output the image
+	//otherwise, output the wishlist
 	$output .= '';
 	
 	if($wishlist->post_content != '') {
@@ -69,38 +114,77 @@ function my_wish_show($atts) {
 	
 	if($wishmeta) {
 		foreach($wishmeta as $i => $meta) {
-			$output .= '<div style="clear: both;" class="wishlist-item">';
+			//print_r($wishmeta);
+			$output .= '<div class="wishlist-item">';
 			$output .= '<h3>'.$meta['wishitem'].'</h3>';
-			if($meta['wishfilename'] != '') {
-				$thumb = wp_get_attachment_image_src( $meta['wishfilename'], 'medium');
-				$output .= '<img style="float: right; padding: 5px;" src="'.$thumb[0].'" />';
+			
+			$output .= '<div class="wishlist-image-form">';
+			
+			if($meta['wishdonorname'] != '' || $meta['wishdonoremail'] != '') {
+				if($wishlist_show_donor == "show") {
+					$output .= '<span class="wishlist-promised">Item Promised by '.$meta[wishdonorname].'!</span><br />';
+				}
+				else {
+					$output .= '<span class="wishlist-promised">Item Promised!</span><br />';
+				}
 			}
 			
+			
+			if($meta['wishfilename'] != '') {
+				$thumb = wp_get_attachment_image_src( $meta['wishfilename'], 'medium');
+				$output .= '<img src="'.$thumb[0].'" />';
+				$output .= '<br />';
+			}
+			
+			
+			if($meta['wishdonorname'] == '' && $meta['wishdonoremail'] == '') {
+				if($wishlist_show_form == "show") {
+						$output .= 'I would like to get this item for you!  Tell me how!';
+						$output .= '<form method="post" action="" class="wishlist-form">';
+						$output .= '<table>';
+						$output .= '<tr><td><span class="wishlist-form-label">Name:</span></td><td><input name="wishdonorname" type="text" class="wishlist-form-input" /></td></tr>';
+						$output .= '<tr><td><span class="wishlist-form-label">Email:</span></td><td><input name="wishdonoremail" type="text" class="wishlist-form-input" /></td></tr>';
+						$output .= '<tr><td colspan="2" class="wishlist-double-span">';
+						$output .= '<input type="hidden" name="post_id" value="'.$id.'" />';
+						$output .= '<input type="hidden" name="wishindex" value="'.$i.'" />';
+						$output .= '<input type="hidden" name="wish_donor_add_update" value="1" />';
+						$output .= '<input type="submit" value="Submit" class="wishlist-form-submit-button" />';
+						$output .= '</td></tr>';
+						$output .= '</table>';
+						$output .= '</form>';
+				}
+			}
+			
+			
+			$output .= '</div>';
+			
 			if($meta['wishprice'] != '') {
-				$output .= 'Price: '.$meta['wishprice'].'<br />';	
+				$output .= '<span class="wishlist-label">Price:</span> '.$meta['wishprice'].'<br />';	
 			}
 			
 			if($meta['wishsize'] != '') {
-				$output .= 'Size: '.$meta['wishsize'].'<br />';	
+				$output .= '<span class="wishlist-label">Size:</span> '.$meta['wishsize'].'<br />';	
 			}
 			
 			if($meta['wishcolor'] != '') {
-				$output .= 'Color: '.$meta['wishcolor'].'<br />';
+				$output .= '<span class="wishlist-label">Color:</span> '.$meta['wishcolor'].'<br />';
 			}
 			
 			if($meta['wishstore'] != '') {
-				$output .= 'Available at: '.$meta['wishstore'].'<br />';
+				$output .= '<span class="wishlist-label">Available at:</span> '.$meta['wishstore'].'<br />';
 			}
+			
+			
 			
 			if($meta['wishlink'] != '') {
 				if(!stristr($meta['wishlink'], 'http://')) {
 					$meta['wishlink'] = 'http://'.$meta['wishlink'];
 				}
-				$output .= 'Link: <a href="'.$meta['wishlink'].'">'.$meta['wishlink'].'</a><br />';	
+				$output .= '<span class="wishlist-label">Link:</span> <a href="'.$meta['wishlink'].'">'.$meta['wishlink'].'</a><br />';	
 			}
 			$output .= '</div>';
 			
-			$output .= '<hr style="clear: both;" />';
+			$output .= '<hr class="wishlist-hr" />';
 			
 		}
 	}
@@ -121,6 +205,14 @@ function my_wish_dynamic_add_custom_box() {
         __( 'Wishes', 'myplugin_textdomain' ),
         'my_wish_dynamic_inner_custom_box',
         'wishlist');
+    
+    add_meta_box(
+    	'my_wish_dynamic_sidebarid',
+    	__( 'Wishlist Settings', 'myplugin_textdomain' ),
+    	'my_wish_dynamic_sidebar_custom_box',
+    	'wishlist',
+    	'side',
+    	'high');
 }
 
 add_action('admin_head-media-upload-popup', 'my_wish_popup_head');
@@ -235,8 +327,8 @@ function my_wish_dynamic_inner_custom_box() {
     if (count($wishes[0]) > 0 && $wishes[0] != ''){
         foreach($wishes[0] as $track ){
             if (isset($track['wishitem']) || isset($track['wishprice']) || isset($track['wishsize']) || isset($track['wishcolor']) || isset($track['wishstore']) || isset($track['wishlink'])){
-                echo '<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table><tr><td>Item Name:</td><td><input type="text" name="my_wishes['.$c.'][wishitem]" value="'.$track['wishitem'].'" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['.$c.'][wishprice]" value="'.$track['wishprice'].'" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['.$c.'][wishsize]" value="'.$track['wishsize'].'" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['.$c.'][wishcolor]" value="'.$track['wishcolor'].'" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['.$c.'][wishstore]" value="'.$track['wishstore'].'" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishlink]" value="'.$track['wishlink'].'" /></td></tr></table>';
-              
+                echo '<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table style="border-collapse: collapse; padding: 5px;"><tr><td>Item Name:</td><td><input type="text" name="my_wishes['.$c.'][wishitem]" value="'.$track['wishitem'].'" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['.$c.'][wishprice]" value="'.$track['wishprice'].'" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['.$c.'][wishsize]" value="'.$track['wishsize'].'" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['.$c.'][wishcolor]" value="'.$track['wishcolor'].'" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['.$c.'][wishstore]" value="'.$track['wishstore'].'" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishlink]" value="'.$track['wishlink'].'" /></td></tr><tr style="background-color: #cccccc;"><td>Promised By:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishdonorname]" value="'.$track['wishdonorname'].'" /></td></tr></tr><tr style="background-color: #cccccc;"><td>Email:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishdonoremail]" value="'.$track['wishdonoremail'].'" /></td></tr></table>';
+
                 echo '<div class="my_wish_image_uploader" data-preview_size="medium">';
                 if(wp_get_attachment_image( $track['wishfilename'], 'medium' )) {	
                 	echo wp_get_attachment_image( $track['wishfilename'], 'medium' );
@@ -247,6 +339,7 @@ function my_wish_dynamic_inner_custom_box() {
 				echo '<input class="value" type="hidden" name="my_wishes['.$c.'][wishfilename]" value="'.$track['wishfilename'].'" />';
 				echo '<p><input type="button" class="button" value="'.__('Add Image','my_wish_list').'" /></p>';
 				echo '<a href="#" class="remove_image">Remove Image</a>';
+				
 				echo '</div>';
                 
                 
@@ -306,7 +399,7 @@ function my_wish_dynamic_inner_custom_box() {
         jQuery(".add").click(function() {
             count = count + 1;
             
-            jQuery('#here').append('<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table><tr><td>Item Name:</td><td><input type="text" name="my_wishes['+count+'][wishitem]" value="" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['+count+'][wishprice]" value="" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['+count+'][wishsize]" value="" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['+count+'][wishcolor]" value="" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['+count+'][wishstore]" value="" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishlink]" value="" /></td></tr></table>   <div class="my_wish_image_uploader" data-preview_size="medium"><img src="'+blankimage+'" alt=""/><input class="value" type="hidden" name="my_wishes['+count+'][wishfilename]" value="" /><p><input type="button" class="button" value="Add Image" /></p><a href="#" class="remove_image">Remove Image</a></div></div>' );
+            jQuery('#here').append('<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table style="border-collapse: collapse;"><tr><td>Item Name:</td><td><input type="text" name="my_wishes['+count+'][wishitem]" value="" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['+count+'][wishprice]" value="" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['+count+'][wishsize]" value="" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['+count+'][wishcolor]" value="" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['+count+'][wishstore]" value="" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishlink]" value="" /></td></tr><tr style="background-color: #cccccc;"><td>Promised By:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishdonorname]" value="" /></td></tr><tr style="background-color: #cccccc;"><td>Email:</td><td><input type="text" size="100" name="my_wishes['+count+'][wishdonoremail]" value="" /></td></tr></table>   <div class="my_wish_image_uploader" data-preview_size="medium"><img src="'+blankimage+'" alt=""/><input class="value" type="hidden" name="my_wishes['+count+'][wishfilename]" value="" /><p><input type="button" class="button" value="Add Image" /></p><a href="#" class="remove_image">Remove Image</a></div></div>' );
 
             
             return false;
@@ -316,6 +409,36 @@ function my_wish_dynamic_inner_custom_box() {
         });
     });
     </script>
+</div><?php
+
+}
+
+/* Prints the sidebar box content */
+function my_wish_dynamic_sidebar_custom_box() {
+	global $post;
+	
+	$wishlist_instructions_link = get_post_meta($post->ID,'wishlist_instructions_link',true);
+	$wishlist_show_form = get_post_meta($post->ID,'wishlist_show_form',true);
+	$wishlist_show_donor = get_post_meta($post->ID,'wishlist_show_donor',true);
+	?>
+    <div id="meta_inner" class="my_wish_list_list">
+	
+    Link to instructions page:<br />
+    <input class="value" type="text" name="wishlist_instructions_link" value="<?php echo $wishlist_instructions_link; ?>" size="45" /><br />
+    <em>Use this field to provide a link to a page with instructions on how/where to purchase items on your wish list and where to send them.</em>
+    <br /><br />
+    Show or Hide the "Will Purchase" form?<br />
+    <select name="wishlist_show_form">
+    	<option<?php if($wishlist_show_form == "hide") { echo ' selected="selected"'; } ?> value="hide">Hide</option>
+    	<option<?php if($wishlist_show_form == "show") { echo ' selected="selected"'; } ?> value="show">Show</option>
+    </select>
+    <br /><br />
+    Show or Hide purchaser names on the wishlist?<br />
+    <select name="wishlist_show_donor">
+    	<option<?php if($wishlist_show_donor == "hide") { echo ' selected="selected"'; } ?> value="hide">Hide</option>
+    	<option<?php if($wishlist_show_donor == "show") { echo ' selected="selected"'; } ?> value="show">Show</option>
+    </select>
+	
 </div><?php
 
 }
@@ -335,10 +458,12 @@ function my_wish_dynamic_save_postdata( $post_id ) {
     }else{return;}
 
     // OK, we're authenticated: we need to find and save the data
-
     $wishes = $_POST['my_wishes'];
-
     update_post_meta($post_id,'my_wishes',$wishes);
+    
+    update_post_meta($post_id,'wishlist_instructions_link',$_POST['wishlist_instructions_link']);
+    update_post_meta($post_id,'wishlist_show_form',$_POST['wishlist_show_form']);
+    update_post_meta($post_id,'wishlist_show_donor',$_POST['wishlist_show_donor']);
 }
 
 
