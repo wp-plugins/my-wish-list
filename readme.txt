@@ -3,7 +3,7 @@ Contributors: kionae
 Donate link: http://www.nlb-creations.com/donate
 Tags: item lists, wish list, wishlist
 Requires at least: 3.2.0
-Tested up to: 3.4.1
+Tested up to: 3.6
 Stable tag: trunk
 
 This plugin allows you to create wish lists for your website, and display them on any post or page with simple shortcode.
@@ -24,8 +24,12 @@ colors, links, and photos so everyone knows what you want/need.
 
 = How do I display my wishlist? =
 
-Use the shortcode [wishlist id=xx] in any page or post, where id is the post id of the wishlist you created.  Wishlists do not have their own template file, 
-so the only way to make them appear is using the shortcode.
+There are two ways.
+
+1) Simply link to it.  A new page exists on your site for each list you create.  If you want to customize how your list is laid out, this is the option for you.  
+Copy the template file /my-wish-list/templates/single-wishlist.php into your active theme's directory and edit away.
+
+2) Use the shortcode [wishlist id=xx] in any page or post, where id is the post id of the wishlist you created.
 
 = Can visitors reserve items to purchase from my wishlist? =
 
@@ -53,6 +57,11 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 * Added ability for donors to reserve items
 * Added additional settings to each wishlist created to make them more customizable
 
+= 1.1 =
+* Fixed some compatibility issues with WordPress 3.6
+* Added a template file for Wishlists that can be customized 
+* Plugin now sends an email to the site admin when an item is promised
+
 == Upgrade Notice ==
 
 = 0.1 =
@@ -66,3 +75,8 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 * Added code to allow override of default CSS
 * Added ability for donors to reserve items
 * Added additional settings to each wishlist created to make them more customizable
+
+= 1.1 =
+* Fixed some compatibility issues with WordPress 3.6
+* Added a template file for Wishlists that can be customized 
+* Plugin now sends an email to the site admin when an item is promised

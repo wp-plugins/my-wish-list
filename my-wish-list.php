@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 1.0
+ * @version 1.1
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 1.0
+Version: 1.1
 Author URI: http://www.nlb-creations.com
 */
 
@@ -41,21 +41,39 @@ function my_wish_create_post_types() {
 }
 
 //add the stylesheet to the frontend theme
-if ( !is_admin() ) {
-	$dir = WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
-	
-	//allow users to override the included css file with one of the same name in their active theme's folder
-	$wishlist_css = get_stylesheet_directory_uri().'/mywishlist.css';
-	if(!file_exists($wishlist_css)) {
-		wp_enqueue_style( 'my-wish-list', $dir.'/styles/mywishlist.css' );
-	}
-	else {
-		wp_enqueue_style( 'my-wish-list', $wishlist_css);
+function my_wish_load_styles() {
+	if ( !is_admin() ) {
+		$dir = WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__));
+		
+		//allow users to override the included css file with one of the same name in their active theme's folder
+		$wishlist_css = get_stylesheet_directory_uri().'/mywishlist.css';
+		if(!file_exists($wishlist_css)) {
+			wp_enqueue_style( 'my-wish-list', $dir.'/styles/mywishlist.css' );
+		}
+		else {
+			wp_enqueue_style( 'my-wish-list', $wishlist_css);
+		}
 	}
 }
+add_action('wp_enqueue_scripts', 'my_wish_load_styles');
+
+// load the theme file for the playlist and show post types
+function my_wish_load_templates($single_template) {
+	global $post;
+
+	if ($post->post_type == 'wishlist') {
+		//first check to see if there's a template in the active theme's directory
+		$user_theme = get_stylesheet_directory().'/single-wishlist.php';
+		if(!file_exists($user_theme)) {
+			$single_template = ABSPATH.'wp-content/plugins/my-wish-list/templates/single-wishlist.php';
+		}
+	}
+	
+	return $single_template;
+}
+add_filter( "single_template", "my_wish_load_templates" ) ;
 
 //function for donors to promise to purchase items on the frontend
-add_action( 'init', 'my_wish_donor_process' );
 function my_wish_donor_process() {
 	if(isset($_POST['wish_donor_add_update'])) {
 		$wishmeta = get_post_meta($_POST['post_id'], 'my_wishes', true);
@@ -67,8 +85,14 @@ function my_wish_donor_process() {
 		$_POST['wish_donor_donation'] = $wishmeta[$_POST['wishindex']]['wishitem'];
 		
 		update_post_meta($_POST['post_id'],'my_wishes',$wishmeta);
+		
+		//send an email to the site admin
+		$admin_email = get_option('admin_email');
+		$headers = 'From: My Wishlist <'.$admin_email.'>' . "\r\n";
+		wp_mail($admin_email, 'Wishlist Item Promised', 'An item from your wishlist has been promised by'.$_POST['wishdonorname'].'('.$_POST['wishdonoremail'].')', $headers);
 	}
 }
+add_action( 'init', 'my_wish_donor_process' );
 
 //shortcode function to show a wishlist in a post or page
 function my_wish_show($atts) {
@@ -122,7 +146,7 @@ function my_wish_show($atts) {
 			
 			if($meta['wishdonorname'] != '' || $meta['wishdonoremail'] != '') {
 				if($wishlist_show_donor == "show") {
-					$output .= '<span class="wishlist-promised">Item Promised by '.$meta[wishdonorname].'!</span><br />';
+					$output .= '<span class="wishlist-promised">Item Promised by '.$meta['wishdonorname'].'!</span><br />';
 				}
 				else {
 					$output .= '<span class="wishlist-promised">Item Promised!</span><br />';
@@ -193,11 +217,6 @@ function my_wish_show($atts) {
 }
 add_shortcode( 'wishlist', 'my_wish_show');
 
-add_action( 'add_meta_boxes', 'my_wish_dynamic_add_custom_box' );
-
-/* Do something with the data entered */
-add_action( 'save_post', 'my_wish_dynamic_save_postdata' );
-
 /* Adds a box to the main column on the Post and Page edit screens */
 function my_wish_dynamic_add_custom_box() {
     add_meta_box(
@@ -214,102 +233,97 @@ function my_wish_dynamic_add_custom_box() {
     	'side',
     	'high');
 }
-
-add_action('admin_head-media-upload-popup', 'my_wish_popup_head');
-add_filter('media_send_to_editor', 'my_wish_media_send_to_editor', 15, 2 );
+add_action( 'add_meta_boxes', 'my_wish_dynamic_add_custom_box' );
 
 /* pulls up the media uploader... all of the code for image upload and attachment is borrowed from Elliot Condon's amazing Advanced Custom Fields Plugin */
-function my_wish_popup_head()
-	{
-		if(isset($_GET["wish_type"]) && $_GET['wish_type'] == 'image')
-		{
-			$preview_size = 'medium';
+function my_wish_popup_head() {
+	if(isset($_GET["wish_type"]) && $_GET['wish_type'] == 'image') {
+		$preview_size = 'medium';
+		
+		?>
+		<style type="text/css">
+			#media-upload-header #sidemenu li#tab-type_url,
+			#media-upload-header #sidemenu li#tab-gallery {
+				display: none;
+			}
 			
-			?>
-			<style type="text/css">
-				#media-upload-header #sidemenu li#tab-type_url,
-				#media-upload-header #sidemenu li#tab-gallery {
-					display: none;
-				}
-				
-				#media-items tr.url,
-				#media-items tr.align,
-				#media-items tr.image_alt,
-				#media-items tr.image-size,
-				#media-items tr.post_excerpt,
-				#media-items tr.post_content,
-				#media-items tr.image_alt p,
-				#media-items table thead input.button,
-				#media-items table thead img.imgedit-wait-spin,
-				#media-items tr.submit a.wp-post-thumbnail {
-					display: none;
-				} 
+			#media-items tr.url,
+			#media-items tr.align,
+			#media-items tr.image_alt,
+			#media-items tr.image-size,
+			#media-items tr.post_excerpt,
+			#media-items tr.post_content,
+			#media-items tr.image_alt p,
+			#media-items table thead input.button,
+			#media-items table thead img.imgedit-wait-spin,
+			#media-items tr.submit a.wp-post-thumbnail {
+				display: none;
+			} 
 
-				.media-item table thead img {
-					border: #DFDFDF solid 1px; 
-					margin-right: 10px;
-				}
+			.media-item table thead img {
+				border: #DFDFDF solid 1px; 
+				margin-right: 10px;
+			}
 
-			</style>
-			<script type="text/javascript">
-			(function($){
+		</style>
+		<script type="text/javascript">
+		(function($){
+		
+			$(document).ready(function(){
 			
-				$(document).ready(function(){
-				
-					$('#media-items').bind('DOMNodeInserted',function(){
-						$('input[value="Insert into Post"]').each(function(){
-							$(this).attr('value','<?php _e("Select Image",'my-wish-list'); ?>');
-						});
-					}).trigger('DOMNodeInserted');
-					
-					$('form#filter').each(function(){
-						
-						$(this).append('<input type="hidden" name="wish_preview_size" value="<?php echo $preview_size; ?>" />');
-						$(this).append('<input type="hidden" name="wish_type" value="image" />');
-						
+				$('#media-items').bind('DOMNodeInserted',function(){
+					$('input[value="Insert into Post"]').each(function(){
+						$(this).attr('value','<?php _e("Select Image",'my-wish-list'); ?>');
 					});
-				});
-							
-			})(jQuery);
-			</script>
-			<?php
-		}
-	}
-	
-	function my_wish_media_send_to_editor($html, $id)
-	{
-		parse_str($_POST["_wp_http_referer"], $arr_postinfo);
-		
-		if(isset($arr_postinfo["wish_type"]) && $arr_postinfo["wish_type"] == "image")
-		{
-			
-			$preview_size = 'medium';
-			
-			$file_src = wp_get_attachment_image_src($id, $preview_size);
-			$file_src = $file_src[0];
-		
-			?>
-			<script type="text/javascript">
-				self.parent.my_wish_div.find('input.value').val('<?php echo $id; ?>');
-			 	self.parent.my_wish_div.find('img').attr('src','<?php echo $file_src; ?>');
-			 	self.parent.my_wish_div.find('img').attr('width', '');
-			 	self.parent.my_wish_div.find('img').attr('height', '');
-			 	self.parent.my_wish_div.addClass('active');
-			 	
-			 	// reset my_wish_div and return false
-			 	self.parent.my_wish_div = null;
-			 	self.parent.tb_remove();
+				}).trigger('DOMNodeInserted');
 				
-			</script>
-			<?php
-			exit;
-		} 
-		else 
-		{
-			return $html;
-		}
-
+				$('form#filter').each(function(){
+					
+					$(this).append('<input type="hidden" name="wish_preview_size" value="<?php echo $preview_size; ?>" />');
+					$(this).append('<input type="hidden" name="wish_type" value="image" />');
+					
+				});
+			});
+						
+		})(jQuery);
+		</script>
+		<?php
 	}
+}
+add_action('admin_head-media-upload-popup', 'my_wish_popup_head');
+	
+function my_wish_media_send_to_editor($html, $id) {
+	parse_str($_POST["_wp_http_referer"], $arr_postinfo);
+	
+	if(isset($arr_postinfo["wish_type"]) && $arr_postinfo["wish_type"] == "image") {
+		
+		$preview_size = 'medium';
+		
+		$file_src = wp_get_attachment_image_src($id, $preview_size);
+		$file_src = $file_src[0];
+	
+		?>
+		<script type="text/javascript">
+			self.parent.my_wish_div.find('input.value').val('<?php echo $id; ?>');
+		 	self.parent.my_wish_div.find('img').attr('src','<?php echo $file_src; ?>');
+		 	self.parent.my_wish_div.find('img').attr('width', '');
+		 	self.parent.my_wish_div.find('img').attr('height', '');
+		 	self.parent.my_wish_div.addClass('active');
+		 	
+		 	// reset my_wish_div and return false
+		 	self.parent.my_wish_div = null;
+		 	self.parent.tb_remove();
+			
+		</script>
+		<?php
+		exit;
+	} 
+	else {
+		return $html;
+	}
+
+}
+add_filter('media_send_to_editor', 'my_wish_media_send_to_editor', 15, 2 );
 
 /* Prints the box content */
 function my_wish_dynamic_inner_custom_box() {
@@ -324,7 +338,7 @@ function my_wish_dynamic_inner_custom_box() {
     $wishes = get_post_meta($post->ID,'my_wishes',false);
     
     $c = 0;
-    if (count($wishes[0]) > 0 && $wishes[0] != ''){
+    if (isset($wishes[0]) && count($wishes[0]) > 0 && $wishes[0] != ''){
         foreach($wishes[0] as $track ){
             if (isset($track['wishitem']) || isset($track['wishprice']) || isset($track['wishsize']) || isset($track['wishcolor']) || isset($track['wishstore']) || isset($track['wishlink'])){
                 echo '<div style="border-bottom: 1px solid #DFDFDF; margin: 5px; padding: 5px;"><span class="remove button" style="cursor: pointer; float: right;">Remove</span><table style="border-collapse: collapse; padding: 5px;"><tr><td>Item Name:</td><td><input type="text" name="my_wishes['.$c.'][wishitem]" value="'.$track['wishitem'].'" /></td></tr><tr><td>Price:</td><td><input type="text" name="my_wishes['.$c.'][wishprice]" value="'.$track['wishprice'].'" /></td></tr><tr><td>Size:</td><td><input type="text" name="my_wishes['.$c.'][wishsize]" value="'.$track['wishsize'].'" /></td></tr><tr><td>Color:</td><td><input type="text" name="my_wishes['.$c.'][wishcolor]" value="'.$track['wishcolor'].'" /></td></tr><tr><td>Store:</td><td><input type="text" name="my_wishes['.$c.'][wishstore]" value="'.$track['wishstore'].'" /></td></tr><tr><td>Link:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishlink]" value="'.$track['wishlink'].'" /></td></tr><tr style="background-color: #cccccc;"><td>Promised By:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishdonorname]" value="'.$track['wishdonorname'].'" /></td></tr></tr><tr style="background-color: #cccccc;"><td>Email:</td><td><input type="text" size="100" name="my_wishes['.$c.'][wishdonoremail]" value="'.$track['wishdonoremail'].'" /></td></tr></table>';
@@ -465,7 +479,7 @@ function my_wish_dynamic_save_postdata( $post_id ) {
     update_post_meta($post_id,'wishlist_show_form',$_POST['wishlist_show_form']);
     update_post_meta($post_id,'wishlist_show_donor',$_POST['wishlist_show_donor']);
 }
-
+add_action( 'save_post', 'my_wish_dynamic_save_postdata' );
 
 
 ?>
