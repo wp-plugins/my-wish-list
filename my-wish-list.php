@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 1.2
+ * @version 1.3
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 1.2
+Version: 1.3
 Author URI: http://www.nlb-creations.com
 */
 
@@ -76,6 +76,7 @@ add_filter( "single_template", "my_wish_load_templates" ) ;
 //function for donors to promise to purchase items on the frontend
 function my_wish_donor_process() {
 	if(isset($_POST['wish_donor_add_update'])) {
+		
 		$wishmeta = get_post_meta($_POST['post_id'], 'my_wishes', true);
 		
 		$wishmeta[$_POST['wishindex']]['wishdonorname'] = $_POST['wishdonorname'];
@@ -89,7 +90,7 @@ function my_wish_donor_process() {
 		//send an email to the site admin
 		$admin_email = get_option('admin_email');
 		$headers = 'From: My Wishlist <'.$admin_email.'>' . "\r\n";
-		wp_mail($admin_email, 'Wishlist Item Promised', 'An item from your wishlist has been promised by'.$_POST['wishdonorname'].'('.$_POST['wishdonoremail'].')', $headers);
+		wp_mail($admin_email, 'Wishlist Item Promised', 'An item ('.$_POST['wishindex']['wishitem'].') from your wishlist has been promised by'.$_POST['wishdonorname'].'('.$_POST['wishdonoremail'].')', $headers);
 	}
 }
 add_action( 'init', 'my_wish_donor_process' );
@@ -169,6 +170,7 @@ function my_wish_show($atts) {
 						$output .= '<tr><td><span class="wishlist-form-label">Name:</span></td><td><input name="wishdonorname" type="text" class="wishlist-form-input" /></td></tr>';
 						$output .= '<tr><td><span class="wishlist-form-label">Email:</span></td><td><input name="wishdonoremail" type="text" class="wishlist-form-input" /></td></tr>';
 						$output .= '<tr><td colspan="2" class="wishlist-double-span">';
+						$output .= '<input type="hidden" name="wishitem" value="'.$meta['wishitem'].'" />';
 						$output .= '<input type="hidden" name="post_id" value="'.$id.'" />';
 						$output .= '<input type="hidden" name="wishindex" value="'.$i.'" />';
 						$output .= '<input type="hidden" name="wish_donor_add_update" value="1" />';

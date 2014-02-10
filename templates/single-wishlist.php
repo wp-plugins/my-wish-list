@@ -77,7 +77,10 @@ get_header(); ?>
 									<table>
 										<tr><td><span class="wishlist-form-label">Name:</span></td><td><input name="wishdonorname" type="text" class="wishlist-form-input" /></td></tr>
 										<tr><td><span class="wishlist-form-label">Email:</span></td><td><input name="wishdonoremail" type="text" class="wishlist-form-input" /></td></tr>
+										
 										<tr><td colspan="2" class="wishlist-double-span">
+										
+										<input type="hidden" name="wishitem" value="<?php echo $meta['wishitem']; ?>" />
 										<input type="hidden" name="post_id" value="<?php the_ID(); ?>" />
 										<input type="hidden" name="wishindex" value="<?php echo $i; ?>" />
 										<input type="hidden" name="wish_donor_add_update" value="1" />

@@ -87,3 +87,6 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 
 = 1.2 =
 * Minor fix in the single-wishlist.php template file
+
+= 1.3 =
+* Added item name to emails
