@@ -110,7 +110,7 @@ get_header(); ?>
 										$meta['wishlink'] = 'http://'.$meta['wishlink'];
 									}
 								?>
-									<span class="wishlist-label">Link:</span> <a href="'.$meta['wishlink'].'"><?php echo $meta['wishlink']; ?></a><br />
+									<span class="wishlist-label">Link:</span> <a href="<?php echo $meta['wishlink']; ?>"><?php echo $meta['wishlink']; ?></a><br />
 							<?php endif; ?>
 								
 								

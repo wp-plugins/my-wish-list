@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 1.1
+ * @version 1.2
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 1.1
+Version: 1.2
 Author URI: http://www.nlb-creations.com
 */
 
@@ -436,9 +436,12 @@ function my_wish_dynamic_sidebar_custom_box() {
 	$wishlist_show_donor = get_post_meta($post->ID,'wishlist_show_donor',true);
 	?>
     <div id="meta_inner" class="my_wish_list_list">
+    <strong>Shortcode:</strong> [wishlist id=<?php echo $post->ID; ?>]
+    
+    <br /><br />
 	
-    Link to instructions page:<br />
-    <input class="value" type="text" name="wishlist_instructions_link" value="<?php echo $wishlist_instructions_link; ?>" size="45" /><br />
+    <strong>Link to instructions page:</strong><br />
+    <input class="value" type="text" name="wishlist_instructions_link" value="<?php echo $wishlist_instructions_link; ?>" size="30" /><br />
     <em>Use this field to provide a link to a page with instructions on how/where to purchase items on your wish list and where to send them.</em>
     <br /><br />
     Show or Hide the "Will Purchase" form?<br />

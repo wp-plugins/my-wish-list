@@ -3,7 +3,7 @@ Contributors: kionae
 Donate link: http://www.nlb-creations.com/donate
 Tags: item lists, wish list, wishlist
 Requires at least: 3.2.0
-Tested up to: 3.6
+Tested up to: 3.8.1
 Stable tag: trunk
 
 This plugin allows you to create wish lists for your website, and display them on any post or page with simple shortcode.
@@ -29,7 +29,8 @@ There are two ways.
 1) Simply link to it.  A new page exists on your site for each list you create.  If you want to customize how your list is laid out, this is the option for you.  
 Copy the template file /my-wish-list/templates/single-wishlist.php into your active theme's directory and edit away.
 
-2) Use the shortcode [wishlist id=xx] in any page or post, where id is the post id of the wishlist you created.
+2) Use the shortcode [wishlist id=xx] in any page or post, where id is the post id of the wishlist you created.  This shortcode appears in the upper-right
+box on the edit form.  Just copy/paste it into your post.
 
 = Can visitors reserve items to purchase from my wishlist? =
 
@@ -62,6 +63,9 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 * Added a template file for Wishlists that can be customized 
 * Plugin now sends an email to the site admin when an item is promised
 
+= 1.2 =
+* Minor fix in the single-wishlist.php template file
+
 == Upgrade Notice ==
 
 = 0.1 =
@@ -80,3 +84,6 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 * Fixed some compatibility issues with WordPress 3.6
 * Added a template file for Wishlists that can be customized 
 * Plugin now sends an email to the site admin when an item is promised
+
+= 1.2 =
+* Minor fix in the single-wishlist.php template file
