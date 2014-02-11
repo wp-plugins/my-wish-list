@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 1.3
+ * @version 1.3.1
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 1.3
+Version: 1.3.1
 Author URI: http://www.nlb-creations.com
 */
 
@@ -90,7 +90,7 @@ function my_wish_donor_process() {
 		//send an email to the site admin
 		$admin_email = get_option('admin_email');
 		$headers = 'From: My Wishlist <'.$admin_email.'>' . "\r\n";
-		wp_mail($admin_email, 'Wishlist Item Promised', 'An item ('.$_POST['wishindex']['wishitem'].') from your wishlist has been promised by'.$_POST['wishdonorname'].'('.$_POST['wishdonoremail'].')', $headers);
+		wp_mail($admin_email, 'Wishlist Item Promised', 'An item ('.$_POST['wishitem'].') from your wishlist has been promised by '.$_POST['wishdonorname'].'('.$_POST['wishdonoremail'].')', $headers);
 	}
 }
 add_action( 'init', 'my_wish_donor_process' );

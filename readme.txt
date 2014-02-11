@@ -90,3 +90,6 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 
 = 1.3 =
 * Added item name to emails
+
+= 1.3.1 =
+* Fix for admin emails
