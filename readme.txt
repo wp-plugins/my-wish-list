@@ -3,7 +3,7 @@ Contributors: kionae
 Donate link: http://www.nlb-creations.com/donate
 Tags: item lists, wish list, wishlist
 Requires at least: 3.2.0
-Tested up to: 3.8.1
+Tested up to: 3.9
 Stable tag: trunk
 
 This plugin allows you to create wish lists for your website, and display them on any post or page with simple shortcode.
