@@ -109,7 +109,7 @@ get_header(); ?>
 									
 							<?php if($meta['wishlink'] != ''): ?>
 								<?php 
-									if(!stristr($meta['wishlink'], 'http://')) {
+									if(!stristr($meta['wishlink'], 'http://') && !stristr($meta['wishlink'], 'https://')) {
 										$meta['wishlink'] = 'http://'.$meta['wishlink'];
 									}
 								?>
