@@ -76,6 +76,9 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 * Fixed a bug that would not allow users to display links that start with https://
 * Verified compatibility with WordPress 4.0
 
+= 1.4.1 =
+* Fixed a minor PHP error that occurred with no list items were present when a list is saved 
+
 == Upgrade Notice ==
 
 = 0.1 =
@@ -107,3 +110,6 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 = 1.4 =
 * Fixed a bug that would not allow users to display links that start with https://
 * Verified compatibility with WordPress 4.0
+
+= 1.4.1 =
+* Fixed a minor PHP error that occurred with no list items were present when a list is saved

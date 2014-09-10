@@ -1,14 +1,14 @@
 <?php
 /**
  * @package My Wish List
- * @version 1.4
+ * @version 1.4.1
  */
 /*
 Plugin Name: My Wish List
 Plugin URI: http://nlb-creations.com/2011/12/30/wp-plug-in-my-wish-list/
 Description: This plugin creates a new content type that can be used to set up and display a wish list on any page or post.
 Author: Nikki Blight <nblight@nlb-creations.com>
-Version: 1.4
+Version: 1.4.1
 Author URI: http://www.nlb-creations.com
 */
 
@@ -472,16 +472,19 @@ function my_wish_dynamic_save_postdata( $post_id ) {
     }else{return;}
 
     // OK, we're authenticated: we need to find and save the data
-    $wishes = $_POST['my_wishes'];
+    $wishes = isset($_POST['my_wishes']) ? $_POST['my_wishes'] : '';
     
-    foreach($wishes as $i => $wish) {
-    	if(!stristr($wish['wishlink'], 'http://') && !stristr($wish['wishlink'], 'https://')) {
-    		$wishes[$i]['wishlink'] = 'http://'.$wish['wishlink'];
-    	}
+    if($wishes) {
+	    foreach($wishes as $i => $wish) {
+	    	if($wish['wishlink'] != '') {
+		    	if(!stristr($wish['wishlink'], 'http://') && !stristr($wish['wishlink'], 'https://')) {
+		    		$wishes[$i]['wishlink'] = 'http://'.$wish['wishlink'];
+		    	}
+	    	}
+	    }
     }
     
     update_post_meta($post_id,'my_wishes',$wishes);
-    
     update_post_meta($post_id,'wishlist_instructions_link',$_POST['wishlist_instructions_link']);
     update_post_meta($post_id,'wishlist_show_form',$_POST['wishlist_show_form']);
     update_post_meta($post_id,'wishlist_show_donor',$_POST['wishlist_show_donor']);
