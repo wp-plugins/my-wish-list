@@ -3,7 +3,7 @@ Contributors: kionae
 Donate link: http://www.nlb-creations.com/donate
 Tags: item lists, wish list, wishlist
 Requires at least: 3.2.0
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: trunk
 
 This plugin allows you to create wish lists for your website, and display them on any post or page with simple shortcode.
@@ -79,6 +79,9 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 = 1.4.1 =
 * Fixed a minor PHP error that occurred with no list items were present when a list is saved 
 
+= 1.4.2 =
+* Security vulnerability fixes 
+
 == Upgrade Notice ==
 
 = 0.1 =
@@ -113,3 +116,6 @@ Yes.  Just copy the my-wish-list/styles/wishlist.css file into your active theme
 
 = 1.4.1 =
 * Fixed a minor PHP error that occurred with no list items were present when a list is saved
+
+= 1.4.2 =
+* Security vulnerability fixes

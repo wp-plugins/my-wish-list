@@ -33,10 +33,10 @@ get_header(); ?>
 						$wishlist_instructions_link = get_post_meta($post->ID,'wishlist_instructions_link',true);
 						$wishlist_show_form = get_post_meta($post->ID,'wishlist_show_form',true);
 						$wishlist_show_donor = get_post_meta($post->ID,'wishlist_show_donor',true);
-						
+
 						//thank you message for donors
 						if(isset($_POST['wish_donor_thank_you'])) {
-							echo '<div class="wishlist-thanks"> Thank you for pledging to get '.$_POST['wish_donor_donation'].' for us!  ';
+							echo '<div class="wishlist-thanks"> Thank you for pledging to get '.sanitize_text_field($_POST['wish_donor_donation']).' for us!  ';
 							if($wishlist_instructions_link != '') {
 								echo '<a href="'.$wishlist_instructions_link.'">Click here</a> for instructions on purchasing and sending the item.';
 							}
